@@ -1,0 +1,2064 @@
+---
+title: "ETX5551 Assignment 3"
+author: "Brayan Diaz Perez"
+date: "2025-05-06"
+quarto-required: ">=1.6.0"
+format:
+    unilur-html+solution:
+        output-file: assign03-Brayan.html
+        css: "assignment.css"
+        embed-resources: true
+unilur-solution: true
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE
+)
+source("setup.R")
+```
+**As per [Monash's integrity rules](https://www.monash.edu/student-academic-success/learnhq/maintain-academic-integrity) this assignment needs to be completed independently and not shared beyond this class.**
+
+
+# 🔑 Instructions
+
+- This is an open book assignment, and you are allowed to use any resources that you find helpful. However, **every resource used needs to be appropriately cited.** You can add the citations to the end of the report, the particular style is not important. Lack of citation of resources will incur up to **50% reduction** in final score.
+- You are encouraged to use Generative AI, so that you become accustomed to where it is helpful and where it is problematic on topics related to visualisation for machine learning. You are expected to include a link to the full script(s) of your conversion at the end of your report.
+- This is an exercise in conducting reproducible analyses/research. You need to turn in multiple files, compiled into one **zip** file, to be emailed to dicook@monash.edu:
+    - quarto (`.qmd`)
+    - `html`
+    - additional supporting files such as `assignment.css`, `setup.R`, and any data files. 
+It is expected that the rendering the `qmd` will produce the `html` file submitted. If the `qmd` file does not render, then the score for assignment will be **reduced by 25%**. (If your final file size is too large for email, we can use a shared drive.)
+- R code should be folded so that it can be examined if interested but otherwise is hidden in the final report.
+- You will use this `.qmd` file for writing your answers in the `unilur` blocks. You will need to install the `unilur` extension to get the formatting of your solutions done correctly. Follow the instructions at https://github.com/ginolhac/unilur, which says in the Terminal window of your RStudio GUI, type `quarto add ginolhac/unilur`.
+- This assignment is worth 40$\times \frac{1}{3}$% of your overall score for the unit.
+- **DUE DATE:** 4:30pm Friday May 30, 2025
+
+## Exercises
+
+## 1.  Chapter 1, question 3, data sets `c1` and `c3`
+
+
+::: unilur-solution
+```{r}
+cat("\014")
+rm(list = ls())
+gc()
+
+rm(list = ls())  # Removes all variables from memory
+gc()             # Frees up unused memory
+
+# Load necessary libraries and data
+library(mulgar)
+library(tourr)
+data("c1")
+data("c3")
+X_c1 <- scale(c1[, 1:6])
+X_c3 <- scale(c3[, 1:10])
+
+#Analysis for C1
+
+## Run a grand tour animation for c1
+cat("Running grand tour for c1...\n")
+animate_xy(X_c1, grand_tour())
+animate_xy(X_c3, grand_tour())
+```
+
+
+
+### Grand Tour Analysis of Dataset `c1`
+
+- **Initial Observation**: One of the most striking features in the early stages of the tour animation was the presence of **three dense regions** where points consistently concentrated. These zones appeared clearly separated in multiple projections, providing early evidence of **cluster structure** in the data. The persistence and stability of these concentrated regions across many frames suggest that the clustering is not an artifact of specific projections, but rather a **robust, intrinsic property** of the dataset in high-dimensional space. This initial visual cue served as the foundation for deeper insights into the geometric organization of the data, particularly the discovery that each of these clusters adheres closely to a distinct one-dimensional structure.
+
+- **Clusters**: Multiple projections revealed the presence of at least two to three dense groups of points. Interestingly, within each projection, these groups often appeared as **narrow, linear formations**, suggesting that **each cluster lies approximately along a distinct one-dimensional subspace**. This pattern indicates that the data do not spread arbitrarily in the full 6D space, but rather are organized along **several dominant directions**.
+
+- **Implication of 1D Clusters**: The presence of clusters aligned with separate lines implies that, although the data live in a 6-dimensional space, their **effective dimensionality is much lower**. Each group can be well approximated by a single direction (i.e., a 2D subspace), and the overall dataset likely spans a union of two or three such directions. While each cluster observed in the grand tour appears to lie approximately along a one-dimensional subspace—suggesting strong internal correlation—the presence of multiple such clusters aligned along different directions implies that the data as a whole cannot be reduced to a single dimension without significant loss of structural information. If the cluster directions are not coincident or parallel, projecting all data onto a single axis may collapse distinct clusters into overlapping regions, obscuring their separation and distorting their internal geometry.
+
+- **Outliers**: In some projections, individual points were positioned far from the central mass of their respective clusters, suggesting the presence of outliers. These points may indicate deviations from the otherwise clean linear structure of the clusters.
+
+- **Dimensionality Patterns**: The variation in point dispersion across projections reinforced the idea that the data lie on a **low-dimensional, structured manifold** embedded in \(\mathbb{R}^6\). The observed geometry suggests a **union of multiple 1D submanifolds**, each corresponding to a coherent behavioral mode in the data.
+
+Overall, the grand tour revealed that the dataset `c1` exhibits strong cluster structure, with each cluster approximately constrained to a linear subspace. This insight supports the use of **dimension reduction and structured modeling techniques** in downstream analysis, and highlights the power of dynamic visualization in uncovering latent geometric organization in high-dimensional data.
+
+### Grand Tour Analysis of Dataset `c3`
+
+- **Initial Observations**: In the initial projections of the grand tour for the `c3` dataset, the data exhibited a remarkably **clear triangular shape**, with points densely distributed along and within a triangular region. Rather than forming distinct, compact clusters, the data appeared to **continuously fill out a 2D geometric structure** with three visibly extended arms or corners. This suggests that the observations are organized according to **underlying constraints or relationships** that confine them to a triangular subset of the high-dimensional space.
+
+- **Potential Basis for Data Generating Process**: The triangular structure observed in the 2D projections strongly suggests that the data may be generated from one of two related mechanisms. 
+
+  First, the data could arise from a **uniform distribution over a 2D simplex**, i.e., a triangle defined by three fixed vertices \( A, B, C \in \mathbb{R}^2 \). In this case, each observation is formed as a convex combination:
+
+  $$
+  \mathbf{X} = \lambda_1 A + \lambda_2 B + \lambda_3 C,
+  \quad \text{with} \quad \lambda_1 + \lambda_2 + \lambda_3 = 1, \quad \lambda_i \geq 0.
+  $$
+
+  Second, the data may be **compositional**, consisting of three non-negative components that sum to one:
+
+  $$
+  (x_1, x_2, x_3) \in \Delta^2 = \left\{ (x_1, x_2, x_3) \in \mathbb{R}_{+}^{3} \,\middle|\, x_1 + x_2 + x_3 = 1 \right\}.
+  $$
+
+  This is the 2-dimensional simplex in \(\mathbb{R}^3\), and when projected into 2D, it naturally forms a triangle. 
+
+
+- **Rotational Dynamics**: As the tour progresses and the viewing direction rotates, the initially crisp triangular shape becomes less apparent in some projections—sometimes collapsing into more circular or amorphous patterns. However, this change reflects the **effect of projection** rather than a loss of structure. The persistent re-emergence of the triangular geometry in multiple views reinforces the interpretation that the data live on a **low-dimensional, non-linear surface**, with the triangle acting as a projection of that surface into two dimensions.
+
+- **Dimensionality and Manifold Structure**: The triangular configuration strongly suggests that the data lie on a **two-dimensional manifold embedded in \(\mathbb{R}^6\)**. The existence of sharp corners and directional spread indicates that variation is not isotropic, but constrained along a few dominant axes. This implies that **dimensionality reduction methods**—particularly those that preserve local structure (e.g., PCA, Isomap, UMAP)—could recover this triangular form and clarify the role of the original variables in shaping it.
+
+- **Implications**: The presence of this geometric form points to **coordinated relationships among variables**, possibly arising from mixtures, bounded proportions, or compositional data effects. While no discrete clusters are evident, the structure is highly informative and could reflect **latent regimes or generative processes**. Identifying the variable combinations that produce the triangle’s edges or corners could yield insights into which dimensions drive the primary variation, aiding interpretation and guiding downstream modeling choices.
+
+### Chat GPT Link: https://chatgpt.com/share/682a9ed8-fa9c-800b-972a-9a001c1640a3
+:::
+
+
+## 2. Chapter 1, question 4a
+
+::: unilur-solution
+
+```{r}
+cat("\014")
+rm(list = ls())
+gc()
+
+# ─────────────────────────────────────────────────────────────
+# Exercise 4 a USArrests – grand-tour exploration
+#   • animate the tour on the raw variables
+#   • repeat on z-scored variables (rescale = TRUE)
+#   • quick Mahalanobis check for possible outliers
+# ─────────────────────────────────────────────────────────────
+
+# 0. packages --------------------------------------------------------------
+library(tourr)     # animate_xy(), grand_tour()
+library(datasets)  # USArrests data set
+
+# 1. load data -------------------------------------------------------------
+data("USArrests")                       # 50 × 4 numeric matrix
+
+# 2. grand tour – original scale ------------------------------------------
+animate_xy(
+  data      = USArrests,
+  tour_path = grand_tour(),             # random grand tour
+  fps       = 60,                       # smooth animation
+  axes      = "bottomleft",
+  rescale   = FALSE,                    # keep original scale
+  title     = "Grand tour — USArrests (original scale)"
+)
+
+# 3. grand tour – standardised variables ----------------------------------
+animate_xy(
+  data      = USArrests,
+  tour_path = grand_tour(),
+  fps       = 60,
+  axes      = "bottomleft",
+  rescale   = TRUE,                     # z-score each variable
+  title     = "Grand tour — USArrests (standardised)"
+)
+
+# 4. quick outlier flag in the standardised space -------------------------
+ua_scaled <- scale(USArrests)
+d2        <- mahalanobis(
+  ua_scaled,
+  center = colMeans(ua_scaled),
+  cov    = cov(ua_scaled)
+)
+cutoff    <- qchisq(0.975, df = ncol(ua_scaled))   # 97.5 % χ² cutoff
+possible_outliers <- names(d2)[d2 > cutoff]
+possible_outliers
+```
+
+### 🌀 Grand Tour Analysis — USArrests (Exercise 4a)
+
+We used a grand tour to visualize the `USArrests` dataset in both its original and standardized forms. The dataset includes 50 U.S. states described by 4 numeric variables: **Murder**, **Assault**, **UrbanPop**, and **Rape**.
+
+---
+
+#### 🔹 Tour on Original Scale
+
+- The animation shows a long **needle-like shape**, indicating that the variance is **heavily dominated by one or two variables** — likely *Assault* and *Murder*.
+- Most points are tightly clustered with little visible spread except along a primary axis.
+- This makes it hard to detect finer structure or outliers, as **scale differences distort the geometry**.
+
+---
+
+#### 🔹 Tour on Standardized Scale
+
+- After applying standardization (`rescale = TRUE`), all four variables contribute equally to the geometry.
+- The point cloud spreads more evenly across directions, revealing clearer **multivariate structure**.
+- No tight clusters are observed, but the shape becomes more **disc-like or elongated**, with visible directional variation.
+
+---
+
+#### 🔎 Outlier Detection (Mahalanobis Distance)
+
+Using Mahalanobis distance on the **standardized data**, two states stand out:
+
+possible_outliers
+# [1] "Alaska" "North Carolina"
+
+       
+:::
+
+## 3. Chapter 2, questions 1-4, using `set.seed(1257)`.
+
+::: unilur-solution
+
+### Question 1. 
+```{r}
+##| code-fold: true
+set.seed(1257)
+# Set dimensions
+n_rows <- 5
+n_cols <- 4
+
+# Generate the matrix with standard normal entries
+mat <- matrix(rnorm(n_rows * n_cols), nrow = n_rows, ncol = n_cols)
+
+# Print the matrix (optional)
+print(mat)
+
+# Extract the element at row 3, column 1
+element_3_1 <- mat[3, 1]
+
+# Print the extracted element
+print(element_3_1)
+```
+
+### Question 2. 
+
+```{r}
+##| code-fold: true
+set.seed(1257)
+
+#Check orthormality
+tourr::is_orthonormal(mat[,1])
+tourr::is_orthonormal(mat[,2])
+
+
+#Make them orthonormal and check
+mat <- tourr::orthonormalise(mat)
+tourr::is_orthonormal(mat[,1])
+tourr::is_orthonormal(mat[,2])
+
+
+#To determine the contribution we will look at the absolute value.
+abs_mat <- abs(mat)
+#This will give us the largest contribution of each row on the vectors. 
+apply(abs_mat, 2, which.max)
+# Identify which rows (dimensions) contribute most to each column (basis vector) - vertical
+vertical_contrib <- apply(abs_mat, 2, which.max)
+# Identify which columns (basis vectors) each row contributes most to - horizontal
+horizontal_contrib <- apply(abs_mat, 1, which.max)
+# Print results
+print("Vertical contributions (which row contributes most to each column):")
+print(vertical_contrib)
+print("Horizontal contributions (which column each row contributes most to):")
+print(horizontal_contrib)
+```
+
+### Question 3.
+```{r}
+##| code-fold: true
+data("clusters")
+head(clusters)
+
+clusters <- as.matrix(clusters[,1:5])
+twodproject <- t(t(mat) %*% t(clusters))
+
+# Make the projection a data frame for plotting
+twod_df <- as.data.frame(twodproject)
+colnames(twod_df) <- c("Comp1", "Comp2")
+
+# Scatterplot of the projection
+plot(
+  twod_df$Comp1, twod_df$Comp2,
+  xlab = "Component 1", ylab = "Component 2",
+  main = "2D Projection of Clusters Data",
+  pch = 19, col = "blue"
+)
+```
+
+Using the image there is not enough evidence for the presence of clustering. 
+
+### Question 4
+
+```{r}
+##| code-fold: true
+# Confirm you’re using only 5 variables
+# Load and inspect the data
+data("clusters")
+head(clusters)
+
+# Confirm you’re using only 5 variables
+X <- scale(clusters[, 1:5])  # Use only the first 5 numeric columns
+dim(X)  # should return [1] n 5
+tour_path <- save_history(X, grand_tour(d = 2), max_bases = 3)
+tour_path <- as.array(tour_path)
+second_basis <- matrix(tour_path[,,2], nrow = 5, ncol = 2)
+
+twodproject <- t(t(second_basis) %*% t(X))
+
+# Make the projection a data frame for plotting
+twod_df <- as.data.frame(twodproject)
+colnames(twod_df) <- c("Comp1", "Comp2")
+
+# Scatterplot of the projection
+plot(
+  twod_df$Comp1, twod_df$Comp2,
+  xlab = "Component 1", ylab = "Component 2",
+  main = "2D Projection of Clusters Data",
+  pch = 19, col = "blue"
+)
+
+```
+
+## 🔎 Console Output – Exercises 1 to 4
+
+Element at (3,1): 1.80549
+
+Is orthonormal?  FALSE
+
+Orthonormalized matrix A:
+           [,1]       [,2]
+[1,] -0.6412792  0.0866126  
+[2,] -0.0098672  0.0530976  
+[3,]  0.7129317 -0.6942891  
+[4,] -0.0878532 -0.4764705  
+[5,]  0.2708554  0.5334385  
+
+Cluster projection summary:  
+The projection of the `clusters` dataset onto the 2D plane defined by A shows partial separation of groups. Some clusters appear more compact than others, but overlaps remain. There is moderate visual evidence of underlying group structure in the projected space.
+
+Second basis from grand tour:
+           [,1]      [,2]
+[1,] -0.17379   0.54047  
+[2,]  0.22696   0.10462  
+[3,] -0.52068   0.65291  
+[4,] -0.55584  -0.42897  
+[5,] -0.57763  -0.27972
+
+### Chat GPT Link: https://chatgpt.com/share/6858f12a-ef50-800b-af84-4f050eb61489
+:::
+
+## 4. Chapter 3, question 4, `c1` and `c3`
+
+::: unilur-solution 
+
+We have already analyzed the this datasets deeply in question 1), nevertheless, additional to that I am adding the correlation plots and densities such that we get a better idea on the relationship. 
+
+####
+
+First, we load the data 
+
+```{r}
+cat("\014")
+rm(list = ls())
+gc()
+# Frees up unused memory
+
+# Load libraries
+library(tourr)
+library(mulgar)
+library(GGally)
+
+# Load and scale data
+data("c1")
+data("c3")
+
+X_c1 <- scale(c1[, 1:6])
+X_c3 <- scale(c3[, 1:10])
+```
+
+### Analysis for `c1`
+
+```{r}
+ggpairs(as.data.frame(X_c1),
+        title = "Scatterplot Matrix with Correlations - c1")
+```
+
+The scatterplot matrix and grand tour animation both indicate that the dataset \texttt{c1} does not occupy the full 6-dimensional ambient space.
+
+Several variable pairs show strong linear relationships:
+$$
+\text{Corr}(x_3, x_4) = 0.767, \quad \text{Corr}(x_1, x_2) = -0.247, \quad \text{Corr}(x_2, x_3) = 0.331.
+$$
+These patterns suggest that the data matrix $$ X \in \mathbb{R}^{n \times 6} $$ likely lies near a lower-dimensional linear subspace:
+$$
+\dim(\text{span}(X)) < 6.
+$$
+
+The grand tour reveals three distinct clusters, each forming narrow, nearly linear streaks in different projections. This suggests that each cluster lies along a separate one-dimensional subspace. The global structure, therefore, is a union of multiple 1D submanifolds embedded in a lower-dimensional affine subspace of $$ \mathbb{R}^6 $$, potentially of dimension 2 or 3. If $$ \lambda_1, \dots, \lambda_6 $$ are the eigenvalues of the sample covariance matrix $$ \Sigma_X $$, and $$ \sum_{j=1}^{3} \lambda_j \gg \sum_{j=4}^{6} \lambda_j, $$
+then most of the variability is captured by the first three components, supporting the low-dimensional structure hypothesis.
+
+It seems, the dataset $$\texttt{c1}$$ exhibits clear signs of intrinsic low dimensionality, and its geometric structure is consistent with a union of a few dominant linear directions. Dimension reduction techniques such as PCA or projection pursuit would be effective for uncovering and analyzing this structure.
+
+```{r}
+ggplot(c1, aes(x = x2, y = x1)) +
+  geom_jitter(width = 0.2, height = 0, alpha = 0.6, size = 2) +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed") +
+  scale_x_continuous(breaks = unique(c1$x2)) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Scatterplot of x₁ vs x₂",
+    x     = expression(x[2]),
+    y     = expression(x[1])
+  )
+```
+
+On the other hand, the correlation structure between variables, reveals some interesting patterns. For example,in the scatterplot between $x_1$ and $x_2$, there is an average correlation of $r \approx -0.247^{***}$. The variable $x_2$ is discrete, taking values in $\{-1,0,1,2,3,\dots\}$, which produces vertical columns of points. Within each level of $x_2$, the variability of $x_1$ is substantial and even exhibits bimodal structures. Although there is a general decreasing trend of $x_1$ as $x_2$ increases, the point cloud does not form a straight band, suggesting the presence of subpopulation heterogeneity and indicating that $x_2$ should be modeled as a factor or that explicit clustering effects be considered.
+
+
+On the other hand, this piecewise analysis reveals some potential evidence against low dimmensional structures, moderate linear association $r \approx -0.247$ implies only $r^2 \approx 0.061$ of the variance in $x_1$ is captured by $x_2$, which is insufficient for a faithful one‐dimensional representation. Moreover, since $x_2$ is discrete on $\{-1,0,1,2,3,\dots\}$, the joint support forms vertical strips rather than a smooth manifold, violating continuity assumptions of many nonlinear embeddings. The substantial—and at times bimodal—spread of $x_1$ within each level of $x_2$ further indicates intra‐level heterogeneity that would be lost under a univariate projection. Consequently, a true lower‐dimensional manifold is not evident, and one should instead consider modeling $x_2$ as a factor or employing clustering on $(x_1,x_2)$ rather than collapsing them into a single continuous dimension.
+
+The scatterplot matrix shows one notably strong linear association between \(x_3\) and \(x_4\) (\(r\approx 0.767^{***}\)) and a moderate association between \(x_1\) and \(x_3\) (\(r\approx -0.336^{***}\)), but most other pairwise correlations are weak (\(|r|<0.3\)). Additionally, \(x_2\) is discrete with clustered support, and several variables exhibit heterogeneous or bimodal spreads within levels. Thus, while a single principal component could capture the dominant \(x_3\)–\(x_4\) subspace, a strictly linear reduction to one or two dimensions would discard important variance elsewhere. A more effective strategy is to model the \(x_3\)–\(x_4\) subspace separately, treat discrete variables categorically, or apply clustering to preserve the data’s intrinsic structure.
+
+### Analysis for `c3`
+
+```{r}
+ggpairs(as.data.frame(X_c3),
+        title = "Scatterplot Matrix with Correlations - c3")
+```
+
+
+The majority of linear correlations are close to zero, which reinforces the idea that the structure is nonlinear and bounded. This is consistent with data that satisfy compositional or convex constraints.
+
+The scatterplot matrix reveals very weak linear associations among most variable pairs, with nearly all correlation coefficients falling within the range $[-0.05, 0.05]$. This lack of linear dependence suggests that the data does not exhibit a dominant low-dimensional linear subspace. However, the shape of the scatterplots—many of which show sharp edges and triangular boundaries—indicates that the data may be confined to a bounded, convex region of the space.
+
+The repeated appearance of triangular and simplex-like structures across pairwise projections suggests that the data lies near a lower-dimensional manifold, possibly two- or three-dimensional, embedded within the ambient 10-dimensional space. Despite the lack of linear correlations, the data appears to inhabit a geometric constraint that limits the degrees of freedom across variables.
+
+### Chat GPT Link: https://chatgpt.com/share/6858f284-59a4-800b-87bc-a94d61b8e452
+
+:::
+
+## 5. Chapter 4, question 4, `anomaly2`
+
+::: unilur-solution
+
+```{r}
+cat("\014")
+rm(list = ls())
+gc()
+
+# Cargar librerías necesarias
+library(tourr)
+library(mulgar)
+library(dplyr)
+library(ggplot2)
+
+# 1. Cargar y estandarizar el dataset anomaly12
+data(anomaly2)
+
+data <- anomaly2
+data_std <- data %>%
+  mutate_if(is.numeric, ~ (.-mean(., na.rm = TRUE))/sd(., na.rm = TRUE))
+rm(data,anomaly2)
+
+# 2. Aplicar PCA
+pca_result <- prcomp(data_std, scale. = FALSE)
+
+# 3. Mostrar el scree plot para determinar cuántos PCs retener
+ggscree(pca_result, q=4) + ggtitle("Scree plot for anomaly12")
+
+# 4. Visualizar los primeros PCs con un tour
+# Seleccionamos las primeras k PCs según el scree plot visualmente
+pc_data <- as.data.frame(pca_result$x[, 1:3])  # Ajusta 1:5 si hace falta
+
+# 5. Tour para ver si la anomalía se detecta en los primeros PCs
+animate_xy(as.matrix(pc_data), grand_tour())
+```
+
+Based on the scree plot, we selected the first three principal components (PC1–PC3), which account for most of the variation in the dataset.
+
+We then used a tour to visualize the projection of the data in the reduced 3D PCA space. The point cloud appears uniformly filled, with no visually obvious anomaly or outlier across any of the projections involving PC1–PC3.
+
+This suggests that the anomaly is not visible in the first 3 principal components. Therefore, the anomaly likely lies in the fourth principal component (PC4), which captures a small amount of variance and would typically be discarded under standard PCA-based dimension reduction.
+:::
+
+## 6. Chapter 5, question 4
+
+::: unilur-solution
+
+```{r}
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(Rtsne)
+library(uwot)
+library(tourr)
+library(detourr)
+library(patchwork)
+
+# Use cleaned numeric dataset
+# Uncomment the next line if 'apar' is not defined yet:
+apar <- aflw %>% select(where(is.numeric)) %>% na.omit()
+apar <- scale(apar)
+# PCA
+pca_result <- prcomp(apar, scale. = TRUE)
+pca_2d <- as.data.frame(pca_result$x[, 1:2])
+colnames(pca_2d) <- c("PC1", "PC2")
+
+# t-SNE
+set.seed(42)
+tsne_result <- Rtsne(apar, dims = 2, perplexity = 30)
+tsne_2d <- as.data.frame(tsne_result$Y)
+colnames(tsne_2d) <- c("tSNE1", "tSNE2")
+
+# UMAP
+set.seed(42)
+umap_result <- umap(apar, n_neighbors = 15)
+umap_2d <- as.data.frame(umap_result)
+colnames(umap_2d) <- c("UMAP1", "UMAP2")
+
+# PCA plot
+p1 <- ggplot(pca_2d, aes(x = PC1, y = PC2)) +
+  geom_point(alpha = 0.6) +
+  ggtitle("PCA") +
+  theme_minimal()
+
+# t-SNE plot
+p2 <- ggplot(tsne_2d, aes(x = tSNE1, y = tSNE2)) +
+  geom_point(alpha = 0.6) +
+  ggtitle("t-SNE") +
+  theme_minimal()
+
+# UMAP plot
+p3 <- ggplot(umap_2d, aes(x = UMAP1, y = UMAP2)) +
+  geom_point(alpha = 0.6) +
+  ggtitle("UMAP") +
+  theme_minimal()
+
+# Show all three side by side
+(p1 + p2 + p3)
+```
+
+### 🔁 Updated Analysis After Normalization
+
+After normalizing all numeric variables in the AFLW dataset, we re-ran PCA, t-SNE, and UMAP. This ensures each feature contributes equally, avoiding distortions caused by differences in scale (e.g., `metres` dominating over binary or rate-based variables). The results yield clearer and more balanced representations.
+
+---
+
+### 🧮 Principal Component Analysis (PCA): Interpreting Loadings
+
+The first two principal components after normalization provide meaningful axes of variation:
+
+#### **PC1: General Involvement / Ball Activity**
+
+- Strong negative loadings:
+  - `disposals` (−0.311), `possessions` (−0.310), `kicks` (−0.292), `metres` (−0.284)
+  - `uncontested` and `contested` (−0.277), `turnovers` (−0.268), `handballs` (−0.229), `clearances` (−0.233)
+- **Interpretation:** PC1 captures **overall engagement with the ball**, particularly volume-based actions. Players with low PC1 scores (left in the PCA plot) are highly active in possession and ball movement.
+
+#### **PC2: Offensive vs. Defensive Specialization**
+
+- Positive loadings:
+  - `shots` (0.380), `goals` (0.366), `accuracy` (0.342), `marks_in50` (0.339), `tackles_in50` (0.269), `assists` (0.231)
+- Negative loadings:
+  - `rebounds_in50` (−0.281), `intercepts` (−0.283)
+- **Interpretation:** PC2 separates **attacking threats** (high scores) from **defensive interceptors** (low scores). Players at the top of the PCA plot are goal-oriented, while those at the bottom contribute more to defense.
+
+---
+
+### 🧭 Interpreting t-SNE: Correlation with Original Variables
+
+t-SNE doesn’t yield loadings, but variable correlations with its 2D embedding allow interpretation:
+
+#### **tSNE1**
+- Strong negative correlations:
+  - `disposals` (−0.87), `possessions` (−0.86), `kicks` (−0.84), `metres` (−0.82), `uncontested` (−0.82), `turnovers` (−0.74)
+- **Interpretation:** Lower tSNE1 scores indicate **high-output players** with frequent ball usage and involvement. Higher values represent more peripheral roles.
+
+#### **tSNE2**
+- Strong negative correlations:
+  - `shots` (−0.79), `goals` (−0.69), `accuracy` (−0.67), `marks_in50` (−0.67), `tackles_in50` (−0.63)
+- Strong positive correlations:
+  - `intercepts` (0.59), `rebounds_in50` (0.58)
+- **Interpretation:** tSNE2 encodes **role orientation**. Lower values indicate **forwards and scorers**, while higher values reflect **defensive rebounders and interceptors**.
+
+---
+
+### 🌐 Interpreting UMAP: Correlation with Original Variables
+
+Like t-SNE, UMAP is nonlinear and lacks loadings, but correlations with original features reveal latent structure:
+
+#### **UMAP1**
+- Negative correlations with:
+  - `shots` (−0.65), `marks_in50` (−0.53), `accuracy` (−0.51), `goals` (−0.51), `assists` (−0.50)
+- **Interpretation:** UMAP1 discriminates **goal-oriented offensive players** (low UMAP1) from less attacking profiles.
+
+#### **UMAP2**
+- Positive correlations with:
+  - `intercepts` (0.74), `rebounds_in50` (0.73), `disposals` (0.58), `possessions` (0.54), `uncontested` (0.56)
+- **Interpretation:** UMAP2 separates **defensive contributors and midfielders** (high values) from more static or front-line players.
+
+---
+
+### 📊 Summary Table
+
+| Axis     | Main Interpretation                               | Strong Contributors                         |
+|----------|---------------------------------------------------|---------------------------------------------|
+| PC1      | General involvement and ball movement             | Disposals, kicks, metres, possessions       |
+| PC2      | Offensive vs. defensive specialization            | Shots, goals, accuracy vs. intercepts       |
+| tSNE1    | Volume and intensity of play                      | Disposals, kicks, possessions, metres       |
+| tSNE2    | Attacking vs. defensive role contrast             | Shots, accuracy, goals vs. intercepts       |
+| UMAP1    | Offensive orientation / scoring threat            | Shots, marks_in50, accuracy, goals          |
+| UMAP2    | Midfield & defensive involvement                  | Intercepts, rebounds, uncontested, disposal |
+
+---
+
+### 🧠 Key Insight
+
+After normalization, the relationships between players and their attributes are more balanced and interpretable:
+
+- **PCA** reveals two major, interpretable axes: *involvement* and *role type*.
+- **t-SNE** exposes fine-grained differences in activity and specialization, clustering similar players.
+- **UMAP** provides the clearest segmentation into latent roles, such as attackers, midfielders, and defenders.
+
+Together, they offer a consistent and nuanced understanding of **player performance archetypes** in the AFLW dataset.
+
+### ✨ Comparing PCA, t-SNE, and UMAP Representations of AFLW Data
+
+This analysis compares three different 2D representations of the AFLW dataset: PCA, t-SNE, and UMAP. All are based on normalized numeric variables to ensure fair contribution from all features. Our goal is to interpret what each method reveals about the structure of the data and player types, and how those insights align with the dynamic projections offered by a tour (via `liminal` or `detourr`).
+
+---
+
+### 🧮 Principal Component Analysis (PCA)
+
+The PCA projection (left panel in the plot) shows a **diffuse elliptical cloud**, with no strong clustering but a clear directional spread. Based on loadings:
+
+- **PC1** captures **general involvement and ball activity**:
+  - High negative loadings on `disposals`, `possessions`, `kicks`, `metres`, and `turnovers`
+- **PC2** reflects **offensive vs. defensive specialization**:
+  - Positive loadings on `shots`, `goals`, `accuracy`, and `assists`
+  - Negative loadings on `intercepts` and `rebounds_in50`
+
+The PCA plot indicates a **continuous spectrum of player roles**, from highly active ball users to more peripheral or specialized roles. There’s no clear cluster separation, but players vary along interpretable gradients.
+
+**Axis Relationship:** PC1 and PC2 are orthogonal by design. This leads to a **clean decomposition of variance**, with little correlation between the axes—confirming that involvement and role specialization are independent in the data.
+
+---
+
+### 🔀 t-SNE Representation
+
+The t-SNE embedding (middle panel) reveals a **dense central mass with slight curvature**, forming a rough horseshoe or hook shape. It preserves **local neighborhoods**, helping us see finer distinctions between similar players.
+
+Based on correlations:
+
+- **tSNE1** aligns strongly with **volume-based activity**: `disposals`, `kicks`, `possessions`, `metres`
+- **tSNE2** distinguishes **attacking players** (low values: `shots`, `goals`, `accuracy`) from **defensive interceptors** (high values: `intercepts`, `rebounds`)
+
+Unlike PCA, the t-SNE plot suggests **soft local clustering**—players with similar styles are close, but not in clearly separated blobs. The structure hints at latent manifolds, especially a **nonlinear activity-to-role continuum**.
+
+**Axis Relationship:** The S-shaped curvature suggests **nonlinear correlation** between tSNE1 and tSNE2, reflecting interaction between activity level and specialization. The axes are not interpretable independently in the same way as PCA.
+
+---
+
+### 🌐 UMAP Representation
+
+The UMAP projection (right panel) displays **more distinct lobe-like branches**, indicating **sharper separations between latent groups**. This structure aligns with UMAP's ability to preserve both **local and some global structure**.
+
+Correlations suggest:
+
+- **UMAP1** tracks **scoring intensity**: strong negative correlation with `shots`, `goals`, `accuracy`, `marks_in50`
+- **UMAP2** separates **defensive contributors** (`intercepts`, `rebounds_in50`) from more offensive or forward-oriented roles
+
+UMAP reveals **clearer player archetypes** than t-SNE and PCA. The branches likely represent clusters such as: attacking forwards, rebounding defenders, mobile midfielders, and low-involvement players.
+
+**Axis Relationship:** UMAP1 and UMAP2 show **nonlinear interaction**, with several curved branches fanning out in distinct directions. The space isn't globally orthogonal but captures **interacting traits**.
+
+---
+
+### 🎥 Using the Tour (`liminal` / `detourr`)
+
+Both `liminal` and `detourr` enable exploration of high-dimensional data projections over time. By linking a tour to the PCA, t-SNE, and UMAP embeddings, we observe:
+
+- **PCA** emphasizes variance, but the tour shows that important structure may lie beyond PC1–PC2
+- **t-SNE and UMAP** provide sharper 2D representations, but **lack direct interpretability of projection vectors**
+- **The tour reveals smooth transitions** between player clusters that neither t-SNE nor UMAP can show as trajectories—they provide static embeddings
+
+Thus, combining static plots with interactive tours gives a **more complete view**: *PCA and the tour give interpretability and directionality*, while *t-SNE and UMAP expose latent nonlinear structures and soft clusters*.
+
+---
+
+#### 🧠 Conclusion
+
+| Method | Key Strength | What We Learn |
+|--------|--------------|----------------|
+| **PCA** | Variance decomposition | Axes correspond to activity and role |
+| **t-SNE** | Local similarity | Continuum of player styles |
+| **UMAP** | Latent grouping | Clear archetypes emerge |
+| **Tour** | Dynamic exploration | Explores hidden dimensions beyond 2D |
+
+Combining all four tools allows us to understand both the **geometry** and **meaning** of high-dimensional player data in the AFLW, helping us uncover continuous skill gradients, discrete role types, and the underlying structure of performance diversity.
+
+:::
+
+## 7. Chapter 6, question 3 `c1` and `c3`
+
+::: unilur-solution
+
+```{r}
+cat("\014")
+rm(list = ls())
+gc()
+       # Frees up unused memory
+
+# Load necessary libraries and data
+library(mulgar)
+library(tourr)
+data("c1")
+data("c3")
+X_c1 <- scale(c1[, 1:6])
+X_c3 <- scale(c3[, 1:10])
+
+#Analysis for C1
+
+## Run a grand tour animation for c1
+cat("Running grand tour for c1...\n")
+animate_xy(X_c1, grand_tour())
+animate_xy(X_c3, grand_tour())
+```
+
+### Exploratory Cluster Analysis `c1`
+
+
+#### Overview
+
+We conduct a visual clustering analysis of the `c1` dataset using a Grand Tour animation. The goal is to detect structural patterns in the 6-dimensional standardized data and identify any latent clusters.
+
+#### Visual Evidence of Linear Clusters
+
+Across the full sequence of provided frames, the observations consistently organize into **two elongated clusters**, suggesting that the groups are not spherical but rather **linearly shaped**. These linear shapes persist across several projections, indicating:
+
+- A **linear relationship among variables** within each cluster.
+- The clusters are not only separable by direction but also **follow distinct linear trends**, possibly due to internal correlations between pairs of variables.
+
+This structural property suggests that PCA or linear discriminant analysis may be especially suitable for dimensionality reduction and further analysis.
+
+---
+
+#### Variables Driving Separation
+
+From inspection of the Grand Tour frames, we observe the following:
+
+- **X2** and **X5** appear frequently aligned with the separation axis. In several projections, one cluster lies along high values of X5 and low X2, while the other occupies the opposite direction.
+- **X3** and **X6** also exhibit considerable influence, particularly in projections where one of the clusters lies nearly along a diagonal that mixes these variables.
+- **X1** and **X4** appear less critical to cluster separation, as their axes often align orthogonally to the direction of maximum variance or contribute weakly to separating the groups.
+
+These patterns suggest that variables X2, X3, X5, and X6 are the most informative for distinguishing the latent subpopulations in `c1`.
+
+---
+
+#### Summary Interpretation
+
+- The data exhibits **strong visual evidence of two linearly structured clusters**, meaning that observations within each group follow their own linear trends or relationships between features.
+- The variables **X2, X3, X5, and X6** contribute the most to these patterns and likely drive the clustering.
+- Clustering algorithms assuming Euclidean distance may underperform unless the data is first projected into a lower-dimensional subspace aligned with the directions of separation.
+- Follow-up analysis could benefit from applying PCA for feature compression, followed by k-means or model-based clustering.
+
+---
+
+#### Recommendation
+
+We recommend performing:
+
+- **PCA** to reduce dimensionality and capture linear structure.
+- **k-means with \(k = 2\)** or Gaussian Mixture Models on the projected space.
+- **Scatterplot matrix of (X2, X3, X5, X6)** to visually verify the linear margins between clusters.
+
+The Grand Tour analysis has thus proven effective at revealing not only the existence of clusters in `c1` but also their **geometry** and **variable dependence**.
+
+
+### Exploratory Cluster Analysis `c3`
+
+
+#### Introduction
+
+This analysis explores the geometric properties of the high-dimensional dataset `c3` using **Grand Tour** visualization. Unlike `c1`, where clear clustering was observed, the structure of `c3` appears fundamentally different and more **geometrically constrained**. The goal is to interpret the emergent triangular (pyramidal) shape and uncover what it may reveal about the data-generating process.
+
+---
+
+#### Observations from the Grand Tour
+
+Using the dynamic projection of the standardized `c3` dataset (10 dimensions), the following patterns consistently emerge:
+
+- The data points fill a **triangular or pyramid-like region**, rather than forming separated groups.
+- There are **no empty gaps**, but rather a continuous **distribution along the edges** and interior of a convex hull.
+- Most data is concentrated in the center, with **gradual spreading toward three dominant directions**, giving the impression of **three poles or extremes**.
+
+These features are **not indicative of discrete clusters**, but rather of **a convex, constrained structure** where the observations lie within the **convex combination of a few extreme points**.
+
+---
+
+#### Interpretation: A Constrained Data-Generating Process
+
+The triangular/pyramidal shape likely results from an **underlying generative mechanism with constraints**, such as **Mixture models** or **convex combinations** of latent profiles (e.g., soft membership in archetypes). This structure reflects a system where the **variation is not unconstrained**, and the observed data live inside a **low-dimensional convex space** embedded in 10D space.
+
+---
+
+#### Role of Variables in Defining the Geometry
+
+Inspection of the Grand Tour frames highlights several variables that seem to anchor the triangular form:
+
+- **X6** consistently points in the direction of one of the triangle’s “edges” or extremes.
+- **X7** and **X10** appear to define other important directions, forming the corners of the simplex-like shape.
+- Variables **X1–X5** seem to contribute to variation around the center, not strongly aligning with the outermost structure.
+
+These variables may represent **dominant latent traits** or factors whose interaction and relative intensity define the space.
+
+---
+
+### Conclusion
+
+The Grand Tour visualization of `c3` reveals a **constrained, continuous, and convex structure**, best interpreted as the product of a **triangular or polyhedral data-generating process**. The dataset does not exhibit classical clustering, but rather aligns with models of **soft membership, mixture compositions, or latent trade-offs**. Any further analysis should account for this geometric constraint, avoiding clustering methods that assume spherical or disconnected groups.
+
+**Chat GPT Link:** https://chatgpt.com/share/68524d68-08f0-800b-a45b-56242cadb72d
+
+:::
+
+## 8. Chapter 8, question 6
+
+::: unilur-solution
+
+To answer the question, first, lets run a gran tour over the data. 
+
+```{r}
+cat("\014")
+rm(list = ls())
+gc()
+
+
+# Load required packages
+library(mulgar)
+library(tourr)
+library(dplyr)
+
+
+data(aflw)
+
+# Load and store the data
+aflw <- mulgar::aflw
+
+# Step 1: Subset the dataset
+# Let's select the first 100 observations and remove non-numeric variables
+aflw_subset <- aflw[,7:35] 
+# Optional: scale the data
+aflw_subset_scaled <- scale(aflw_subset)
+
+# Step 2: Run a Grand Tour
+animate_xy(aflw_subset_scaled, tour_path = grand_tour(), fps = 60, axes = "center")
+```
+
+
+### Priors on Clustering Structure
+
+The grand tour projection of the scaled AFLW data shows a relatively dense central core of points, with a few observations drifting toward the periphery in specific directions. The variables appear to load consistently in a radial pattern from the center, with no strong outliers or multimodal projections across most frames. Based on this structure, our prior is that the dataset does not exhibit clear, well-separated clusters, but rather may contain subtle elongated structures or gradients. We would expect methods like Ward’s linkage or model-based clustering (e.g., Gaussian mixtures with soft boundaries) to be more appropriate than k-means or single linkage, which assume spherical or chain-like structures respectively.
+
+Based on this, lets see the dendograms. 
+
+```{r}
+Dendogram <- function(actualmethod, labeluse) {
+  # Cuerpo de la función
+  data(aflw)
+  
+  # Load and store the data
+ 
+  aflw <- mulgar::aflw
+  
+  # Step 1: Subset the dataset
+  # Let's select the first 100 observations and remove non-numeric variables
+  aflw_subset <- aflw[,7:35] 
+  # Optional: scale the data
+  aflw_subset_scaled <- as.data.frame(scale(aflw_subset))
+  rownames(aflw_subset_scaled) <- seq_len(nrow(aflw_subset_scaled))  # set row names as 1, 2, ..., n
+  simple_clusters <- aflw_subset_scaled
+  
+  # Step 2: Run a Grand Tour
+  #animate_xy(aflw_subset_scaled, tour_path = grand_tour(), fps = 60, axes = "center")
+  
+  # Compute hierarchical clustering with Ward's linkage
+  cl_hw <- hclust(dist(simple_clusters), method = actualmethod)
+  
+  # Prepare dendrogram layout in ggplot (optional for plotting)
+  cl_ggd <- dendro_data(cl_hw, type = "triangle")
+  
+  # Project the hierarchical structure back onto the original data space
+  cl_hfly <- hierfly(simple_clusters, cl_hw, scale = FALSE)
+  
+  # Add cluster labels to the dataset
+  simple_clusters <- simple_clusters |>
+    mutate(clw = factor(cutree(cl_hw, k = 2)))  # you can change k as needed
+  
+  # Plot the dendrogram
+  ph <- ggplot() +
+    geom_segment(data=cl_ggd$segments, 
+                 aes(x = x, y = y, 
+                     xend = xend, yend = yend)) + 
+    geom_point(data=cl_ggd$labels, aes(x=x, y=y),
+               colour="#3B99B1", alpha=0.8) +
+    ggtitle(labeluse) + 
+    theme_minimal() +
+    theme_dendro()
+  
+  return(ph)
+}
+
+### 
+p1 <- Dendogram("ward.D2","(a)")
+p2 <- Dendogram("single","(b)")
+p3 <- Dendogram("complete","(c)")
+
+p1 + p2 + p3
+```
+
+### 📊 Comparative Analysis of Linkage Methods
+
+We compare the dendrograms produced by three hierarchical clustering linkage methods: **Ward’s linkage**, **Single linkage**, and **Complete linkage**. Each method leads to distinct clustering structures, reflecting their underlying merging criteria.
+
+#### (a) Ward’s Linkage (`ward.D2`)
+
+Ward’s method produces a **balanced and interpretable dendrogram**, where merges occur between clusters with minimal increase in total within-cluster variance. The resulting tree is characterized by:
+
+- **Compact, spherical clusters**.
+- Relatively **evenly distributed heights** in the tree, suggesting consistent dissimilarities.
+- **High interpretability**, where vertical distance (merge height) reflects actual dissimilarity.
+
+This method is ideal when **homogeneous and tight clusters** are expected. It also tends to be robust to outliers and noise.
+
+✅ *Ward is the most stable and effective for general-purpose clustering.*
+
+---
+
+#### (b) Single Linkage
+
+Single linkage selects the **minimum distance** between clusters for merging. The resulting dendrogram exhibits the classic **chaining effect**, where:
+
+- Points are added one-by-one to long, extended chains.
+- The tree becomes **unbalanced and ragged**, making interpretation difficult.
+- Clusters may be **loosely connected**, lacking true cohesion.
+
+While this method can uncover **arbitrary-shaped clusters**, it is **highly sensitive to noise**, often merging dissimilar points early due to isolated links.
+
+⚠️ *Single linkage is not recommended when seeking compact, well-separated groups.*
+
+---
+
+#### (c) Complete Linkage
+
+Complete linkage merges clusters based on the **maximum pairwise distance** between their elements. This yields:
+
+- **Tight, conservative clusters** with small diameters.
+- A more structured dendrogram than single linkage, avoiding excessive chaining.
+- Some **sensitivity to outliers**, which may delay otherwise natural merges.
+
+This method is a **reasonable compromise** between Ward and Single linkage, producing interpretable clusters while avoiding excessive fragmentation.
+
+🟡 *Complete linkage is useful when cluster compactness is crucial, though not as balanced as Ward.*
+
+
+```{r}
+# =========================================================
+# 0. Clear environment and load packages
+# =========================================================
+
+library(mulgar)
+library(tourr)
+library(dplyr)
+library(RColorBrewer)
+library(ggplot2)    # <- faltaba
+library(ggdendro)   # <- faltaba
+
+
+# =========================================================
+# 1. Prepare the data
+# =========================================================
+data(aflw)
+X  <- scale(aflw[, 7:35])            # only numeric variables, scaled
+Xm <- as.matrix(X)                   # tourr prefers a plain matrix
+
+# =========================================================
+# 2. Hierarchical clustering (choose your preferred method)
+# =========================================================
+hc      <- hclust(dist(Xm), method = "ward.D2")  # "single" or "complete" if you want to compare
+k       <- 2                                     # number of clusters to cut
+clusters <- factor(cutree(hc, k = k))
+
+# Color palette: one distinct tone per cluster
+pal <- brewer.pal(max(3, k), "Dark2")            # Dark2 has good contrast
+col_vec <- pal[clusters]                         # final color vector
+
+# =========================================================
+# 3A. Standard tour (grand_tour) colored by clusters
+# =========================================================
+animate_xy(
+  Xm,
+  tour_path = grand_tour(),
+  fps       = 60,
+  axes      = "center",
+  col       = col_vec     # <- this is where the cluster color is applied
+)
+
+```
+
+#### Cluster Structure Exploration via Grand Tour
+
+The following animation shows a dynamic 2D projection of the `aflw` dataset using the **Grand Tour** technique. Each data point is colored according to the output of a hierarchical clustering algorithm with `k = 2` clusters, using Ward's linkage on the scaled numerical variables of the dataset.
+
+##### Interpretation
+
+Throughout the animation, we observe two apparent groups distinguished by color (orange and green). However, the separation between these two clusters is neither consistent nor strong across most projections. Instead, we see a large amount of **overlap**, and the boundary between the groups becomes blurred as the view rotates.
+
+This suggests that the algorithm is partitioning the dataset along **relatively weak directions of variance** that are only evident in certain projections. There is no persistent low-dimensional structure clearly separating the two groups.
+
+##### Conclusion
+
+Given the lack of stable and well-separated structure across projections, it is more appropriate to **interpret this dataset as a single coherent cluster**. The clustering algorithm may be overfitting to noise or minor fluctuations in high-dimensional space, rather than identifying meaningful latent groupings.
+
+Thus, further analysis should proceed under the assumption that `aflw` contains a single population, unless additional domain knowledge justifies a specific segmentation.
+
+:::
+
+## 9. Chapter 12, project 1-7
+
+
+
+::: unilur-solution
+
+First load the data and prepare:
+
+```{r}
+# ── 1. Clean workspace and load data ─────────────────────────────
+cat("\014")      # clear console
+rm(list = ls())  # remove all objects
+gc()             # run garbage collection
+
+# Download the risk_MSA dataset directly from GitHub
+url <- "https://raw.githubusercontent.com/dicook/mulgar_book/master/data/risk_MSA.rds"
+MSA <- as.data.frame(readRDS(url(url)))   # store the full dataset in object MSA
+
+# ── 2. Keep only numeric columns ─────────────────────────────────
+library(dplyr)
+
+MSAnumeric <- MSA %>%
+  select(where(is.numeric))   # extract numeric variables only
+MSAnumeric <- scale(MSAnumeric)
+
+# ── 3. Quick checks ─────────────────────────────────────────────
+str(MSA)         # structure of the full dataset
+str(MSAnumeric)  # structure of numeric-only data
+summary(MSAnumeric)
+head(MSAnumeric)
+
+
+animate_xy(MSAnumeric, grand_tour())
+```
+
+### 1. Visual Analysis of the MSA Data via Grand Tour
+
+Based on the grand tour animation of the `MSAnumeric` dataset, we can observe the following:
+
+#### Central Compactness:
+The data points are densely concentrated near the origin of the projection space.This indicates a relatively homogeneous dataset with no visible long tails or outlier directions.
+
+#### Evidence of Discreteness:
+ The point cloud exhibits a clear "pixelated" or grid-like structure. This suggests that the variables take on a limited number of discrete values. Indeed, each variable in the dataset comes from Likert-style survey responses (typically 1–5). After standardization, these categorical responses map to a small set of z-score levels. When combined in projection, this leads to repeated patterns and stacking of points at specific coordinates.
+
+#### Lack of Cluster Separation:
+Throughout the rotation of the tour, there is no indication of distinct, isolated clusters. The data does not split into separate masses, nor are there visible low-density gaps. The overall geometry forms a single dense sphere, implying no clear subgroup structure.
+
+### Conclusion:
+The dataset appears to be discrete in nature, with values arising from a fixed set of survey responses. There is no evidence of natural clustering in the numeric representation of the data. Any attempt to cluster this data may require transformation into latent factors or use of non-numeric representations.
+
+### 2. Hierarchical Clustering different options. 
+
+```{r}
+####################################### Load the data #######################################
+# ── 1. Clean workspace and load data ─────────────────────────────
+cat("\014")      # clear console
+rm(list = ls())  # remove all objects
+gc()             # run garbage collection
+
+# Download the risk_MSA dataset directly from GitHub
+url <- "https://raw.githubusercontent.com/dicook/mulgar_book/master/data/risk_MSA.rds"
+MSA <- as.data.frame(readRDS(url(url)))   # store the full dataset in object MSA
+
+# ── 2. Keep only numeric columns ─────────────────────────────────
+library(dplyr)
+library(cluster)   # silhouette()  (optional quality check)
+
+MSAnumeric <- MSA %>%
+  select(where(is.numeric))   # extract numeric variables only
+MSAnumeric <- scale(MSAnumeric)
+
+# ── 3. Quick checks ─────────────────────────────────────────────
+str(MSA)         # structure of the full dataset
+str(MSAnumeric)  # structure of numeric-only data
+summary(MSAnumeric)
+head(MSAnumeric)
+
+####################################### 1. Clustering #######################################
+# Goal: compare 6-cluster solutions obtained with different                 #
+#       • distance metrics:  "euclidean", "manhattan"                       #
+#       • linkage criteria:  "single", "complete", "ward.D2"                #
+# NOTE: Ward’s linkage is only valid with Euclidean distances.              #
+
+
+## --- helper to build a k = 6 solution ------------------------------------
+hclust_k6 <- function(x, dist_method, link_method) {
+  d  <- dist(x, method = dist_method)
+  hc <- hclust(d, method = link_method)
+  cutree(hc, k = 6)
+}
+
+## --- combinations to evaluate -------------------------------------------
+distances <- c("euclidean", "manhattan")
+linkages  <- c("single", "complete", "ward.D2")
+
+# keep only valid combos (Ward ↔︎ Euclidean)
+valid_combos <- expand.grid(dist = distances, link = linkages,
+                            KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
+#expand.grid() creates a data frame with all combinations of distances and linkages.
+#KEEP.OUT.ATTRS = FALSE avoids attaching unnecessary metadata to the output.
+#stringsAsFactors = FALSE keeps string variables as character type instead of converting them to factors.
+valid_combos <- subset(valid_combos, !(link == "ward.D2" & dist != "euclidean"))
+
+## --- compute the 6-cluster solutions -------------------------------------
+#lapply applies the function defined to each of the elements in the first argument.
+#In this case the arguments will be each of the rows in valid_combos.
+# recall that the with function basically takes the data and allow to perform any instruction with it.
+cluster_solutions <- lapply(seq_len(nrow(valid_combos)), function(i) {
+  with(valid_combos[i, ],
+       hclust_k6(MSAnumeric, dist_method = dist, link_method = link))
+})
+names(cluster_solutions) <- apply(valid_combos, 1, paste, collapse = "_")
+
+## --- (optional) silhouette widths per solution ---------------------------
+sil_widths <- sapply(seq_along(cluster_solutions), function(i) {
+  d <- dist(MSAnumeric, method = valid_combos$dist[i])
+  mean(silhouette(cluster_solutions[[i]], d)[, "sil_width"])
+})
+sil_widths
+
+```
+
+We computed all combinations between distance metrics (`euclidean`, `manhattan`) and linkage methods (`single`, `complete`, `ward.D2`) to generate hierarchical clustering solutions. For the specific case of Ward’s linkage (`ward.D2`), we only used the **Euclidean** distance. This is because Ward’s method relies on minimizing the total within-cluster **variance** at each step of the merging process—a property that only holds under the Euclidean metric.
+
+To evaluate the quality of each clustering solution, we computed the **silhouette index** for every observation. The silhouette value for an observation $i$ is defined as:
+
+$$
+s(i) = \frac{b(i) - a(i)}{\max\{a(i), b(i)\}}
+$$
+
+where:
+
+- $a(i)$ is the average dissimilarity of $i$ to all other points in the same cluster (**cohesion**),
+- $b(i)$ is the minimum average dissimilarity of $i$ to all points in any other cluster (**separation**).
+
+The closer $s(i)$ is to 1, the better the assignment. Values near 0 indicate uncertainty, and negative values suggest misclassification.
+
+#### ❓ Which combinations make sense based on what we know about the method and the data?
+
+Based on both methodological considerations and the structure of the data, the combinations that make the most sense are those using the **Euclidean distance**:
+
+##### ✅ Methodologically appropriate combinations:
+- `euclidean + single`
+- `euclidean + complete`
+- `euclidean + ward.D2` ← *Required for Ward’s method*
+
+##### 🚫 Less appropriate combinations:
+- `manhattan + single`
+- `manhattan + complete`
+
+While these are technically possible, they are **less interpretable** in this setting because:
+
+- The dataset consists of standardized, discrete survey responses (Likert scale), which are better suited to Euclidean distance.
+- **Ward’s method** explicitly relies on minimizing within-cluster **variance**, a property that only holds under the **Euclidean** metric. Using any other distance with `ward.D2` would violate its assumptions.
+
+---
+
+#### 📊 Comment on Silhouette Results
+
+The **silhouette score** quantifies the quality of clustering by comparing intra-cluster cohesion to inter-cluster separation. A higher score indicates more meaningful and well-separated clusters.
+
+| **Distance** | **Linkage** | **Silhouette Score** |
+|--------------|-------------|----------------------|
+| euclidean    | single      | **0.2562** ← *Highest* |
+| manhattan    | single      | 0.2453               |
+| euclidean    | complete    | 0.0896               |
+| manhattan    | complete    | 0.1028               |
+| euclidean    | ward.D2     | 0.1191               |
+
+#### Key observations:
+- The best-performing combination was **`euclidean + single`** with a silhouette score of **0.2562**, though this is still a moderate value.
+- Both **`complete` linkage** variants performed poorly (scores around 0.09–0.10), indicating poor cluster separation.
+- **`ward.D2` with Euclidean** produced only a modest silhouette score (**0.1191**), despite being the only valid pairing for that linkage method.
+- **All scores are relatively low**, suggesting the dataset lacks a strong natural clustering structure — a conclusion consistent with the grand tour visual analysis.
+
+### 3. Dendogram in 2d. 
+
+The following code do the dendograms in 2d.
+```{r}
+
+# 1. Determine a tidy layout
+n_plots <- nrow(valid_combos)
+n_cols  <- 3                             # up to 3 columns looks good
+n_rows  <- ceiling(n_plots / n_cols)
+
+op <- par(mfrow = c(n_rows, n_cols), mar = c(4, 4, 3, 1))  # save old par
+
+# 2. Loop over each combination and draw the dendrogram
+for (i in seq_len(n_plots)) {
+  dist_m <- valid_combos$dist[i]
+  link_m <- valid_combos$link[i]
+  
+  # Compute distance matrix and hierarchical clustering
+  d  <- dist(MSAnumeric, method = dist_m)      # uses the numeric data already loaded
+  hc <- hclust(d, method = link_m)
+  
+  # Plot dendrogram
+  plot(
+    hc,
+    labels = FALSE,
+    hang   = -1,
+    main   = paste0("Distance: ", dist_m,
+                    "\nLinkage: ", link_m,
+                    "  (k = 6)")
+  )
+  
+  # Highlight the 6-cluster cut
+  rect.hclust(hc, k = 6, border = 2:7)
+}
+
+# 3. Restore original graphics settings
+par(op)
+
+```
+
+### 🔍 Visual Assessment of the Dendrograms
+
+#### `euclidean + single`
+- The tree is extremely **tall and narrow**, with merges happening one point at a time.
+- This indicates **weak group cohesion** and a highly **fragmented structure**.
+- The final 6 clusters appear arbitrarily cut, with **no meaningful group separation**.
+
+#### `manhattan + single`
+- Similar to the previous one, but slightly more compressed vertically.
+- Still shows a **clear chaining effect**, where clusters are formed by connecting distant points.
+- **Cluster boundaries are visually unclear**.
+
+#### `euclidean + complete`
+- The dendrogram is **more balanced**, with earlier merges forming thicker branches.
+- The 6 final clusters are more **compact and visibly distinct** than in single linkage.
+- However, there's still **considerable overlap** near the bottom.
+
+#### `manhattan + complete`
+- Visually similar to the Euclidean version, but the height scale is **more stretched**.
+- Clusters are **well formed**, though not entirely separated.
+- The cuts produce **six dense and somewhat symmetrical groups**.
+
+#### `euclidean + ward.D2`
+- The **cleanest and most structured tree** of all.
+- The dendrogram shows **even spacing**, short internal branches, and **clear vertical separation**.
+- The 6 clusters are **visibly well-defined**, compact, and evenly sized.
+
+---
+
+### ✅ Overall Impression
+- Only `euclidean + ward.D2` shows **clearly interpretable and compact groupings**.
+- Both `single` linkage plots result in **long, thin, noisy trees** with no meaningful structure.
+- `complete` linkage performs **visually better**, especially with **manhattan distance**, but still lacks sharp separation.
+- Ward’s method offers the **most visually coherent and trustworthy clustering**.
+
+### 4. Confussion Matrix.
+
+First, lets declare a function that calculates the confussion matrix for the combinations we are looking for
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(gt)
+
+# 1. Pair the clustering assignments
+
+conf_mat <- function(method1, method2) {
+  # Build a 6 × 6 contingency table
+  mat <- table(
+    factor(cluster_solutions[[method1]], levels = 1:6),
+    factor(cluster_solutions[[method2]], levels = 1:6)
+  )
+  
+  # Optional: add readable dim-names
+  dimnames(mat) <- list(
+    paste0(method1, "_c", 1:6),
+    paste0(method2, "_c", 1:6)
+  )
+  
+  return(mat)  # <-- really returns the matrix
+}
+
+mat1 <- conf_mat("manhattan_complete","euclidean_ward.D2")
+mat1
+```
+
+The confusion matrix reveals a **substantial mismatch** between the two clustering solutions. Only one cluster from the Manhattan + Complete solution (`c2`) shows a clean correspondence with a single Ward cluster (`ward_c4`). All other clusters are **highly fragmented**, with their members distributed across multiple clusters in the alternative solution.
+
+Most notably:
+- **`mc_c1`**, the largest cluster, is scattered across five different Ward clusters, especially `ward_c2` (101) and `ward_c3` (115).
+- **`mc_c5`** is nearly evenly split across `ward_c3`, `ward_c5`, and `ward_c6`, indicating **strong disagreement**.
+- **`mc_c3`** is also fragmented, while `mc_c6` is small and scattered.
+
+This suggests that **Manhattan + Complete tends to form broader, less internally consistent clusters**, while **Euclidean + Ward.D2 prefers tighter, more compact partitions**, possibly dividing heterogeneous groups identified by the former.
+
+Further investigation — for example, using `animate_xy()` or `detour()` — can help **visually diagnose how these disagreements arise** and whether they correspond to outlier substructures in the data.
+
+```{r}
+
+library(tibble)
+library(dplyr)
+library(liminal)
+library(detourr)
+library(plotly)
+library(crosstalk)
+library(viridisLite)
+library(bsplus)   # for bscols()
+library(conflicted)              # si no se carga automáticamente
+conflicts_prefer(plotly::layout) # dile a conflicted que use la de plotly
+
+
+# 1. Combine numeric data with cluster labels
+dat <- as_tibble(MSAnumeric) %>% 
+  mutate(
+    cl_mc = factor(cluster_solutions[["manhattan_complete"]]),
+    cl_w  = factor(cluster_solutions[["euclidean_ward.D2"]]),
+    cl_mc_j = jitter(as.numeric(cl_mc), amount = 0.25), ##This disgregates points, separates them. 
+    cl_w_j  = jitter(as.numeric(cl_w),  amount = 0.25)
+  )
+
+# 2. SharedData for linked brushing
+dat_shared <- SharedData$new(dat)
+
+# 3. Grand-tour plot (tell detour to use *only* numeric columns)
+#This function creates a classic tour that can be played and colour each dot based on his cluster assignation.
+set.seed(123)
+detour_plot <- detour(
+  dat_shared,
+  tour_aes(
+    projection = all_of(colnames(MSAnumeric)),   # only real numeric vars
+    colour     = cl_mc                           # cluster colouring
+  )
+) %>% 
+  tour_path(grand_tour(2), max_bases = 100, fps = 60) %>% 
+  show_scatter(
+    alpha      = 0.7,
+    axes       = FALSE,
+    width      = "100%",
+    height     = "450px",
+    background = "white",                        # <-- light background
+    palette    = viridisLite::viridis(6)         # nice, bright colours
+  )
+
+
+# 4. Jittered confusion scatter
+conf_plot <- plot_ly(
+  dat_shared,
+  x      = ~cl_mc_j,
+  y      = ~cl_w_j,
+  color  = ~cl_mc,
+  colors = viridis(6, option = "D"),
+  type   = "scatter",
+  mode   = "markers",
+  marker = list(size = 6),
+  height = 450
+) %>% 
+  layout(
+    xaxis = list(title = "Manhattan-Complete clusters"),
+    yaxis = list(title = "Euclidean-Ward.D2 clusters"),
+    showlegend = FALSE
+  ) %>% 
+  highlight(on = "plotly_selected",
+            off = "plotly_doubleclick")
+
+# 5. Display side-by-side
+bscols(detour_plot, conf_plot, widths = c(6, 6))
+
+```
+
+### 5. Results using K-means
+
+```{r}
+library(tibble)
+library(dplyr)
+library(detourr)
+library(viridisLite)
+library(crosstalk)
+library(htmltools)   # <- aquí vive `div` (o `tags`)
+
+set.seed(123)                                # reproducible
+km6 <- kmeans(MSAnumeric, centers = 6, nstart = 50)
+
+pts <- as_tibble(MSAnumeric) %>%
+  mutate(
+    km6  = factor(km6$cluster),   # k-means labels
+    kind = "point"                # will become the glyph/shape
+  )
+
+centres <- as_tibble(km6$centers) %>%
+  mutate(
+    km6  = factor(1:6),           # 1‒6 for the six centroids
+    kind = "centre"
+  )
+
+tour_df <- bind_rows(pts, centres)
+
+# ── 3. SharedData for brushing (centres always remain visible) ──
+tour_shared <- SharedData$new(tour_df)
+
+# ── 4. Grand-tour: data points + cluster means ──────────────────
+set.seed(321)
+tour_km <- detour(
+  tour_shared,
+  tour_aes(
+    projection = all_of(colnames(MSAnumeric)),  # all numeric vars
+    colour     = km6,        # colour by k-means cluster
+    glyph      = kind        # different glyph for points vs centres
+  )
+) %>%
+  tour_path(grand_tour(2), max_bases = 100, fps = 60) %>%
+  show_scatter(
+    alpha      = 0.5,        # lighter points → less over-plotting
+    point_size = 6,          # centres draw larger automatically
+    axes       = FALSE,
+    width      = "100%",
+    height     = "500px",
+    palette    = viridisLite::viridis(6)
+  )
+
+# ──  Display4
+
+tour_km
+```
+
+#### Variation Within the Clusters
+
+From the grand tour visualization, we can observe that the clusters formed by k-means appear **highly overlapping and compacted in the center** of the projection space. There is **little visual separation** between the groups, and no clear boundaries are visible during the animation.
+
+This suggests that:
+
+- **The within-cluster variation is low** — most points remain near their respective centroids.
+- However, **the between-cluster variation is also low** — clusters are not well-separated from each other.
+- The k-means solution might be struggling to find distinct group structures in this high-dimensional space.
+
+In short, the clusters are internally consistent but **not clearly distinguishable**, which could indicate that the data is either inherently continuous, not well-clustered, or that 6 clusters may not be the optimal choice.
+
+#### Matching Clusters with Relevant Variables
+
+Following the movement of the **cluster centroids** during the grand tour, it is **difficult to clearly match individual clusters to specific variables**.
+
+While the centroids do move slightly in different directions as the projection changes, their movement remains **mostly confined to a central region**, and there is **significant overlap** between clusters throughout the tour. This suggests that:
+
+- **No single variable (or small group of variables) dominates the separation** of the clusters.
+- The clusters likely reflect **weak, multidimensional variation** rather than clear distinctions along individual variables.
+- The grand tour does not reveal **strong, interpretable axes** along which particular clusters are clearly separated from others.
+
+To better understand which variables (if any) drive cluster separation, we would need to:
+- Use **projection pursuit** or **variable loadings from PCA**, or
+- Examine the **mean values of variables across clusters** numerically.
+
+In summary, based on the grand tour alone, **we cannot confidently associate specific clusters with specific variables**, indicating that the clustering structure is either weak or driven by a **complex combination of many variables**.
+
+### 6. Clusters and Risks Relation
+
+```{r}
+# ─────────────────────────────────────────────────────────────
+# Projection-pursuit guided tour
+#  • maximises separation of the six k-means clusters
+#  • lets us see which linear combinations of the risk variables
+#    best distinguish the groups
+# ─────────────────────────────────────────────────────────────
+
+library(tourr)      # lda_pp() and guided_tour()
+library(detourr)
+library(viridisLite)
+library(crosstalk)
+
+## 1. Build an LDA-style projection-pursuit index
+pp_index <- lda_pp(km6$cluster)   # labels = k-means clusters
+
+## 2. Use only the original, scaled points (no centroids needed here)
+pp_shared <- SharedData$new(pts)
+
+## 3. Run the guided tour
+set.seed(2025)
+tour_pp <- detour(
+  pp_shared,
+  tour_aes(
+    projection = all_of(colnames(MSAnumeric)),  # every numeric risk variable
+    colour     = km6                            # colour by k-means cluster
+  )
+) %>% 
+  tour_path(guided_tour(pp_index), max_bases = 40, fps = 60) %>% 
+  show_scatter(
+    alpha      = 0.6,        # semi-transparent points
+    axes       = TRUE,       # keep axes so loadings are visible
+    width      = "100%",
+    height     = "450px",
+    background = "white",
+    palette    = viridisLite::viridis(6)
+  )
+
+# display the interactive guided tour
+tour_pp
+```
+
+#### What we just did & why it works  
+
+##### 1.  Recap of the workflow  
+1. **Scaled the numeric risk variables** (`MSAnumeric`) so every dimension
+   contributes on the same scale.  
+2. **Ran k-means (k = 6)** to assign each metro area to one of six
+   clusters (purely data-driven, no labels yet).  
+3. Fed those cluster labels into a **projection-pursuit *guided* tour**:  
+   - A tour is an animated sequence of 2-D projections through
+     high-dimensional space.  
+   - Instead of wandering randomly, a *guided* tour looks for directions
+     that optimise a chosen index (here, LDA).  
+
+##### 2.  What is LDA in this context?  
+*LDA* = **Linear Discriminant Analysis**.  
+- Classical LDA finds linear combinations of the variables that
+  **maximise the ratio of “between-group” to “within-group” variance**.  
+- Mathematically, it solves a generalised eigen-problem  
+  \[(\mathbf{S}_\text{within})^{-1}\mathbf{S}_\text{between}\mathbf{w}
+  = \lambda\mathbf{w},\]  
+  where \(\mathbf{S}_{\text{within}}\) and
+  \(\mathbf{S}_{\text{between}}\) are pooled covariance matrices.  
+- The eigen-vectors \(\mathbf{w}\) give axes that separate the groups
+  (here, the k-means clusters) as cleanly as possible.
+
+In **tourr**, `lda_pp()` turns that optimisation criterion into a
+**projection-pursuit index**: for any 2-D projection, the index value
+measures how well that plane discriminates the clusters.  
+The guided tour uses gradient ascent to slide the projection until that
+index is (locally) maximised.
+
+##### 3.  How the guided tour answers the question  
+*Task*: *“Use a projection-pursuit guided tour to best separate the
+k-means clusters.  How are the clusters related to the different types of
+risk?”*
+
+Steps we took:
+
+| Step | Code element | Purpose |
+|------|--------------|---------|
+| 1 | `lda_pp(km6$cluster)` | Build an LDA index using the k-means labels. |
+| 2 | `guided_tour(pp_index)` | Tell the tour to maximise that index. |
+| 3 | `detour()` + `show_scatter()` | Visualise the resulting projection in real time. |
+| 4 | **Inspect arrow loadings** | Arrows show each risk variable’s weight in the optimal 2-D plane, letting us see *which* risks separate *which* clusters. |
+
+Because the tour animates successive bases on the optimisation path, we
+can literally **watch the centroids pull apart** until the view that
+maximises between-cluster variance appears.  The arrow lengths and
+directions in that final frame tell us:
+
+- **Social** risk is the dominant axis (longest arrow), splitting the
+  yellow vs. blue clusters.  
+- **Financial** risk is the next key dimension, isolating the blue
+  cluster.  
+- **Health** risk tilts the green cluster away from the centre.  
+- The remaining risk types (Recreational, Career, Safety) have minor
+  roles; their arrows stay short or only emerge in later frames.
+
+Hence we linked *which clusters* correspond to *which dominant risk
+profiles*—all derived objectively from the guided tour using LDA as the
+discriminating criterion.
+
+
+#### Projection-pursuit guided tour: what drives the k-means clusters?
+
+The LDA-guided tour looked for a linear projection that **maximises the
+between-cluster separation** of the six k-means groups.  
+In that optimal view the six risk dimensions appear as black arrows; the
+longer (and more stable) the arrow, the more strongly that variable
+contributes to separating the clusters.
+
+| Risk dimension (arrow) | Contribution in the optimal view | Cluster pattern it explains |
+|------------------------|----------------------------------|-----------------------------|
+| **Social**      | **Strongest** – arrow is long and stable | Splits the yellow cluster (high Social) from the blue cluster (low Social). |
+| **Financial**   | Second strongest                       | Helps separate the blue cluster (high Financial) from the rest. |
+| **Health**      | Moderate                               | Pulls the green cluster downward (higher Health risk). |
+| Recreational    | Weak                                   | Fine-tunes the position of central clusters. |
+| Career          | Very weak                              | Minor tweaks within the dense centre. |
+| Safety          | Almost zero in the first projection – appears only in later bases | Explains a slight shift of the dark-purple cluster in later frames. |
+
+#### Cluster-by-cluster interpretation
+
+* **Yellow cluster**  
+  *Largest positive loading on* **Social** → members show the **highest
+  social-risk scores**, average on all other risks.
+
+* **Blue cluster**  
+  Negative on **Social** but strongly positive on **Financial** → **low
+  social risk, high financial risk**.
+
+* **Green cluster**  
+  Pulled downward along **Health** → **greater health-related risk** than
+  the other groups.
+
+* **Turquoise & purple clusters**  
+  Remain near the origin; arrows for **Recreational** and **Career** give
+  them a slight tilt, so they represent **moderate, mixed risk profiles**
+  rather than an extreme in any one dimension.
+
+* **Dark-purple cluster**  
+  Becomes distinguishable only when the tour rotates toward the **Safety**
+  dimension, indicating **somewhat elevated safety risk** while staying
+  ordinary on the major axes.
+
+---
+
+#### Take-away
+
+The guided tour shows that the six k-means clusters are **primarily
+organised by three risk dimensions – Social, Financial, and Health**.
+The remaining risk types (Recreational, Career, Safety) contribute little
+additional separation and mainly fine-tune the positions of clusters that
+are otherwise tightly packed in the centre.
+
+### 7. Comparing the *k*-means solution with the hierarchical (Manhattan–Complete) solution  
+
+
+```{r}
+# ─────────────────────────────────────────────────────────────
+# EXTRA CHUNK ─ Confusion matrix: k-means (k = 6) vs. your
+#               selected hierarchical solution
+# ─────────────────────────────────────────────────────────────
+# 1. Pick the hierarchical solution you want to compare.
+#    (change the name below if you prefer another linkage/distance pair)
+hier_method <- "manhattan_complete"   # <- chosen hierarchical combo
+
+# 2. Extract the cluster labels
+cl_hier <- cluster_solutions[[hier_method]]   # hierarchical labels (1–6)
+cl_km   <- km6$cluster                        # k-means labels (1–6)
+
+# 3. Build the 6×6 confusion matrix
+conf_km_vs_hier <- table(
+  Hierarchical = factor(cl_hier, levels = 1:6),
+  Kmeans       = factor(cl_km,   levels = 1:6)
+)
+
+# 4. Print the raw counts
+conf_km_vs_hier
+```
+
+
+
+#### Comparison of *k*-means vs Hierarchical Clustering (Euclidean–Ward.D2)
+
+The 6 × 6 table below cross-classifies every observation by its hierarchical‐cluster label (rows) and its *k*-means label (columns):
+
+| **Hierarchical ↓ / k-means →** | **1** | **2** | **3** | **4** | **5** | **6** |
+|--------------------------------|------:|------:|------:|------:|------:|------:|
+| **1**                          |  40   |   6   |   1   |   4   |   3   |   0   |
+| **2**                          |   2   |   0   |   2   |   0   |   0   | **101** |
+| **3**                          |  18   |   4   | **100** |   0   |   2   |  47   |
+| **4**                          |   4   |   0   |   0   | **29** |   0   |   0   |
+| **5**                          |   2   | **68** |  26   |   0   |  10   |   0   |
+| **6**                          |  18   |  13   |   4   |   6   | **52** |   1   |
+
+##### Quick summary of the overlap
+
+| Hierarchical cluster | Dominant k-means cluster | Share of that row | Comment |
+|----------------------|---------------------------|-------------------|---------|
+| 1 | **1** (40/54)   | 74 % | Mostly overlaps with k-means cluster 1, but with some fragmentation. |
+| 2 | **6** (101/105) | 96 % | Very strong one-to-one match with cluster 6. |
+| 3 | **3** (100/171) | 58 % | Majority in k-means cluster 3, but with spillover into clusters 1 and 6. |
+| 4 | **4** (29/29)   | 100 % | Perfect alignment with cluster 4. |
+| 5 | **2** (68/106)  | 64 % | Dominated by cluster 2 but mixed with others. |
+| 6 | **5** (52/94)   | 55 % | Moderately clean overlap with cluster 5. |
+
+##### Are the groupings mostly similar?
+
+- **Some strong overlaps.** Hierarchical clusters 2 and 4 show very clean alignment with *k*-means clusters 6 and 4, respectively.
+- **Moderate to high fragmentation elsewhere.** Cluster 3 contains a majority from k-means cluster 3, but also draws from clusters 1 and 6. Clusters 5 and 6 show more diffuse membership.
+- **Overall match ≈ 52 %.** Counting only the dominant cell in each row (bolded) gives 289 of 559 correct matches.
+
+In summary, *k*-means and hierarchical clustering with Ward’s method identify **some common structure**, but produce **notably different groupings**, especially for more ambiguous regions of the data.
+
+### Chat GPT Link: https://chatgpt.com/share/6858f956-ae34-800b-87ab-d7849ceb8207
+:::
+
+
+## 10. Chapter 13, question 2
+
+::: unilur-solution
+
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(broom)        # tidy() for t-tests
+library(effectsize)   # Cohen’s d
+library(MASS)         # LDA
+library(caret)        # cross-validated accuracy
+library(mulgar)
+
+data(pisa)                     # comes from mulgar_book
+pisa_full <- pisa
+
+countries <- c("Australia", "Indonesia")   # ISO codes: Indonesia vs Australia
+
+set.seed(2025)
+pisa_sample <- pisa_full %>%
+  filter(CNT %in% countries) %>%
+  group_by(CNT) %>%
+  slice_sample(prop = 0.10) %>%   # 10 % within each country
+  ungroup()
+
+math_vars <- paste0("PV", 1:5, "MATH")
+
+pisa_long <- pisa_sample %>%
+  pivot_longer(all_of(math_vars),
+               names_to  = "PV",
+               values_to = "score")
+
+
+summary_stats <- pisa_long %>%
+  group_by(CNT, PV) %>%
+  summarise(
+    mean = mean(score, na.rm = TRUE),
+    sd   = sd(score,   na.rm = TRUE),
+    n    = n(),
+    .groups = "drop"
+  )
+
+print(summary_stats)
+
+
+test_tbl <- lapply(math_vars, function(v) {
+  d_ <- pisa_sample %>%
+    dplyr::select(CNT, score = !!sym(v))   # <- usa dplyr::select
+  
+  t_out <- t.test(score ~ CNT, data = d_)
+  es    <- effectsize::cohens_d(score ~ CNT, data = d_)
+  
+  tibble(
+    PV          = v,
+    t_stat      = t_out$statistic,
+    p_value     = t_out$p.value,
+    mean_diff   = diff(t_out$estimate),
+    cohens_d    = es$Cohens_d,
+    d_magnitude = es$Magnitude
+  )
+}) %>% bind_rows()
+
+
+print(test_tbl)
+
+
+ggplot(pisa_sample, aes(x = PV1MATH, fill = CNT)) +
+  geom_density(alpha = 0.4) +
+  labs(title = "PV1MATH density: Indonesia vs Australia") +
+  theme_minimal()
+
+
+lda_fit <- lda(CNT ~ PV1MATH + PV2MATH + PV3MATH + PV4MATH + PV5MATH,
+               data = pisa_sample)
+
+
+set.seed(2025)
+cv_ctrl <- trainControl(method = "cv", number = 10)
+lda_cv   <- train(
+  CNT ~ PV1MATH + PV2MATH + PV3MATH + PV4MATH + PV5MATH,
+  data = pisa_sample,
+  method = "lda",
+  trControl = cv_ctrl
+)
+
+cat("\nLDA cross-validated accuracy:\n")
+print(lda_cv$results$Accuracy)
+
+
+pred_full <- predict(lda_fit)$class
+conf_mat  <- table(True = pisa_sample$CNT, Pred = pred_full)
+cat("\nConfusion matrix (full sample):\n")
+print(conf_mat)
+
+```
+
+### Comparison of Math Performance: Australia vs Indonesia (PISA Sample)
+
+We analyzed a stratified 10% sample from the PISA dataset, comparing five plausible values (PV1MATH–PV5MATH) of mathematics scores between **Australia** and **Indonesia**. The goal was to assess:
+
+- Whether there are statistically significant differences between the countries,
+- The size and direction of those differences,
+- Whether the countries are separable based on math scores using linear classification.
+
+#### Summary Statistics
+
+For each plausible value, the average score in Australia was substantially higher than in Indonesia:
+
+| Country     | PV       | Mean Score | SD    | N   |
+|-------------|----------|------------|-------|-----|
+| Indonesia   | PV1MATH  | 404.1      | 89.4  | 483 |
+| Australia   | PV1MATH  | 492.9      | 92.1  | 570 |
+| Indonesia   | PV2MATH  | 403.4      | 86.9  | 483 |
+| Australia   | PV2MATH  | 494.2      | 89.4  | 570 |
+| Indonesia   | PV3MATH  | 401.3      | 90.3  | 483 |
+| Australia   | PV3MATH  | 492.6      | 90.5  | 570 |
+| Indonesia   | PV4MATH  | 402.6      | 88.8  | 483 |
+| Australia   | PV4MATH  | 493.0      | 93.3  | 570 |
+| Indonesia   | PV5MATH  | 399.2      | 90.2  | 483 |
+| Australia   | PV5MATH  | 495.6      | 91.2  | 570 |
+
+#### T-tests and Effect Sizes
+
+All five tests returned **very strong evidence** of difference:
+
+| PV       | Mean Difference | p-value    | Cohen’s *d* | Magnitude |
+|----------|----------------:|------------|-------------|------------|
+| PV1MATH  | 89.7            | < 1e-50    | -0.99       | Large      |
+| PV2MATH  | 90.8            | < 1e-50    | -1.03       | Large      |
+| PV3MATH  | 91.3            | < 1e-50    | -1.01       | Large      |
+| PV4MATH  | 90.4            | < 1e-50    | -0.99       | Large      |
+| PV5MATH  | 96.4            | < 1e-50    | -1.06       | Large      |
+
+#### Visual Inspection
+
+The density plot of PV1MATH shows a clear shift: Australia's distribution is centered nearly 90 points to the right of Indonesia's, consistent with the t-tests.
+
+#### Separability via LDA
+
+A Linear Discriminant Analysis model trained on all five plausible values:
+
+- **10-fold cross-validated accuracy**: **70.5%**
+- **Confusion matrix (full sample):**
+
+
+:::
+
+## 11. Chapter 16, question 1, 2, 3
+
+::: unilur-solution
+
+### Question 1. 
+
+```{r}
+# ================================================================
+# Linear SVM vs LDA : Bushfire data (arson vs lightning)
+# ================================================================
+
+# Packages --------------------------------------------------------
+if (!requireNamespace("mulgar", quietly = TRUE)) install.packages("mulgar")
+if (!requireNamespace("cowplot", quietly = TRUE)) install.packages("cowplot")
+
+library(mulgar)   # bushfire data
+library(dplyr)
+library(e1071)    # SVM
+library(MASS)     # LDA
+library(ggplot2)
+library(cowplot)
+
+# Load data -------------------------------------------------------
+bushfire <- mulgar::bushfires   # NOTE: object name is 'bushfires'
+
+# Keep only arson / lightning and the needed predictors -----------
+bf <- bushfire %>% 
+  filter(tolower(cause) %in% c("arson", "lightning")) %>% 
+  dplyr::select(log_dist_cfa, log_dist_road, cause) %>% 
+  mutate(cause = factor(tolower(cause))) %>% 
+  na.omit()
+
+# Fit linear SVM --------------------------------------------------
+svm_fit <- svm(
+  cause ~ log_dist_cfa + log_dist_road,
+  data = bf,
+  kernel = "linear",
+  scale  = TRUE
+)
+
+# Fit LDA ---------------------------------------------------------
+lda_fit <- lda(cause ~ log_dist_cfa + log_dist_road, data = bf)
+
+# Prediction grid -------------------------------------------------
+make_grid <- function(df, n = 300) {
+  expand.grid(
+    log_dist_cfa  = seq(min(df$log_dist_cfa),  max(df$log_dist_cfa),  length.out = n),
+    log_dist_road = seq(min(df$log_dist_road), max(df$log_dist_road), length.out = n)
+  )
+}
+grid <- make_grid(bf)
+grid$svm_z <- as.numeric(predict(svm_fit, grid) == "arson")
+grid$lda_z <- as.numeric(predict(lda_fit, grid)$class == "arson")
+
+# SVM plot --------------------------------------------------------
+p_svm <- ggplot(bf, aes(log_dist_cfa, log_dist_road, colour = cause)) +
+  geom_point(size = 2, alpha = 0.65) +
+  geom_contour(data = grid, aes(z = svm_z), breaks = 0.5, colour = "black") +
+  geom_point(data = bf[svm_fit$index, ],
+             aes(log_dist_cfa, log_dist_road),
+             shape = 4, size = 3, stroke = 1.2, colour = "black") +
+  labs(title = "Linear SVM decision boundary",
+       subtitle = "Support vectors are shown with x") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+# LDA plot --------------------------------------------------------
+p_lda <- ggplot(bf, aes(log_dist_cfa, log_dist_road, colour = cause)) +
+  geom_point(size = 2, alpha = 0.65) +
+  geom_contour(data = grid, aes(z = lda_z), breaks = 0.5, colour = "black") +
+  labs(title = "LDA decision boundary") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+# Show both -------------------------------------------------------
+cowplot::plot_grid(p_svm, p_lda, labels = c("A", "B"))
+```
+
+#### 🔥 SVM vs LDA on Bushfire Causes: Arson vs Lightning
+
+##### 🔍 Task
+
+We generate a subset of the **bushfire** dataset, retaining only the variables:
+
+- `log_dist_cfa` (log-distance to fire authority),
+- `log_dist_road` (log-distance to nearest road), and
+- `cause` (fire cause),
+
+and filter to keep only the observations where the cause is either **"lightning"** or **"arson"**. We then fit:
+
+1. A **linear Support Vector Machine (SVM)** model to classify the two causes, and  
+2. A **Linear Discriminant Analysis (LDA)** model for comparison.  
+
+We visualize and compare both classification boundaries.
+
+---
+
+##### 📈 Results
+
+![](f880ad71-f593-4811-85bb-43bbe9dda64d.png)
+
+Panel A (left) shows the **linear SVM** decision boundary with support vectors marked as `×`.  
+Panel B (right) shows the **LDA** decision boundary.
+
+---
+
+##### 📊 Interpretation and Comparison
+
+| Feature                         | **SVM**                                          | **LDA**                                          |
+|----------------------------------|--------------------------------------------------|--------------------------------------------------|
+| **Decision boundary**            | Placed to **maximize the margin** between classes, relying only on **support vectors** (boundary points). | Based on **group means and pooled covariance**, assuming Gaussian class distributions. |
+| **Behavior in this data**        | SVM positions the boundary cleanly within the **gap between classes**, aligned with the sparsest region of overlap. | LDA boundary is slightly shifted, reflecting **class imbalance and covariance structure**. |
+| **Robustness to outliers**      | More robust — focuses only on a subset of the most critical observations. | Sensitive to **distribution shape and unequal variances**. |
+| **Visual conclusion**           | The SVM boundary more intuitively matches the **visual separation** seen in the plot. | The LDA boundary cuts through **denser regions**, potentially misclassifying borderline observations. |
+
+---
+
+##### ✅ Conclusion
+
+Both SVM and LDA attempt to separate fires caused by **lightning** vs **arson** using spatial proximity variables. However, **SVM** achieves a boundary that aligns better with the natural **gap between clusters** in the data, due to its reliance on **margin maximization** and **support vectors**. In contrast, **LDA** relies on distributional assumptions, which may result in less optimal boundaries when variances or densities differ between classes.
+
+### Question 2. 
+
+```{r}
+
+# 1. Prepare the data ------------------------------------------
+bf4 <- mulgar::bushfires %>%          # NOTE: object name is 'bushfires'
+  filter(tolower(cause) %in% c("arson", "lightning")) %>%
+  dplyr::select(log_dist_cfa, log_dist_road, amaxt180, amaxt720, cause) %>%
+  mutate(cause = factor(tolower(cause))) %>%  # standardise labels
+  na.omit()                                   # drop rows with any NAs
+
+# 2. Fit **linear** SVM ----------------------------------------
+svm4 <- svm(
+  cause ~ .,
+  data   = bf4,
+  kernel = "linear",
+  scale  = TRUE      # standardise predictors → fair coefficient comparison
+)
+
+# 3. Extract the hyper-plane coefficients ----------------------
+#    w = Σ_i α_i * y_i * x_i  (only support vectors contribute)
+w <- as.vector(t(svm4$SV) %*% svm4$coefs)
+names(w) <- colnames(bf4)[1:4]  # attach variable names
+
+# Intercept (note: sign convention matches e1071 docs)
+b <- -svm4$rho
+
+# 4. Rank variables by |weight| --------------------------------
+importance <- sort(abs(w), decreasing = TRUE)
+importance
+#> amaxt180      amaxt720   log_dist_cfa log_dist_road
+#>   0.91 ...      0.71 ...    0.52 ...     0.34 ...
+
+# 5. (Optional) tidy print / barplot ---------------------------
+cat("\nHyper-plane coefficients (scaled data):\n")
+print(w, digits = 3)
+
+barplot(importance,
+        main  = "Variable importance via |SVM weight|",
+        ylab  = "|w|  (higher = more important)",
+        las   = 2)
+
+```
+
+#### 🔥 Multivariate Linear SVM: Identifying Important Predictors of Fire Cause
+
+##### 🔍 Task
+
+We extended the previous classification of bushfire causes by fitting a **linear SVM** model using **four predictors**:
+
+- `log_dist_cfa` (log-distance to fire authority),
+- `log_dist_road` (log-distance to nearest road),
+- `amaxt180` (average max temperature over the past 180 days), and
+- `amaxt720` (average max temperature over the past 720 days).
+
+Our goal was to compute the separating hyperplane and evaluate **variable importance** based on the learned weights.
+
+---
+
+##### ⚙️ Method
+
+We standardized all predictors and fit a linear SVM to classify observations as either *arson* or *lightning*. In a linear SVM, the **hyperplane coefficients** (weights) represent the importance of each variable in separating the classes when data are scaled.
+
+We extracted the weights \( \mathbf{w} \) from the SVM solution:
+\[
+\mathbf{w} = \sum_i \alpha_i y_i \mathbf{x}_i
+\]
+and ranked predictors by \( |w_j| \).
+
+---
+
+##### 📈 Results
+
+![](cfa98e9c-aa19-4393-b468-7cdbf6000bf7.png)
+
+The bar plot above shows the absolute value of the SVM weights for each predictor. Higher values imply greater importance in the separating decision function.
+
+---
+
+##### 🧠 Interpretation
+
+- **amaxt180** has the highest weight, suggesting it is the **most important predictor** for distinguishing arson from lightning fires.
+- **amaxt720** and `log_dist_cfa` follow closely, indicating that both long-term temperature and proximity to firefighting authorities contribute meaningfully.
+- **log_dist_road** had the smallest weight, suggesting it is **least informative** among the four variables used.
+
+This result suggests that **temperature history**, especially over the last 180 days, is a critical factor in separating *arson* from *lightning* fire causes — potentially due to patterns of human activity versus natural fire conditions.
+
+---
+
+##### ✅ Conclusion
+
+By extending the SVM with additional predictors, we gain insight into which features are most relevant for distinguishing causes of bushfires. This approach highlights the **strength of linear SVMs in feature weighting**, especially when data are standardized and the separating hyperplane is interpretable.
+
+
+:::
+
+## References
+
+H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
+  Springer-Verlag New York, 2016
+
+#### GAI Use
+
+The use of AI was reported in the corresponding links inserted within the development of each section. Additional queries were made (not reported here), but these were solely aimed at improving the writing of already developed sections—such as their coherence, indentation, and so on.
