@@ -1,0 +1,57 @@
+Diane Project
+
+This repository contains a fully reproducible analysis for the Advanced Econometrics course (ETX5551 at Monash University).
+
+How to run the project
+
+1. Download or clone the repository  
+   You can download the ZIP from GitHub or clone it via Git:
+   git clone https://github.com/BrayanDiaz2894/Diane-Project.git
+
+2. Open the RStudio project  
+   Open the file named Diane.Rproj. This will automatically set the correct working directory.
+
+3. Render the Quarto document  
+   Open the file assign03-Brayan.qmd and click the Render button at the top of RStudio, or use this command in the console:
+   quarto::render("assign03-Brayan.qmd")
+
+Required R packages
+
+Make sure the following packages are installed before rendering:
+
+- dplyr  
+- tidyr  
+- ggplot2  
+- broom  
+- effectsize  
+- MASS  
+- caret  
+- here  
+- mulgar  
+- readr
+
+You can install them all with:
+
+install.packages(c(
+  "dplyr", "tidyr", "ggplot2", "broom",
+  "effectsize", "MASS", "caret", "here",
+  "mulgar", "readr"
+))
+
+Project structure
+
+- Diane.Rproj – RStudio project file (open this first)  
+- assign03-Brayan.qmd – Main Quarto analysis (render this)  
+- data/ – All required datasets  
+- setup.R – Supporting script for consistent setup  
+- assignment.css – Custom styling for the output  
+- assign03-Brayan.html – Rendered HTML output  
+- .gitignore, .RData, .Rhistory – Project environment files
+
+Reproducibility notes
+
+- All paths are relative to the root of the project.  
+- Warnings and messages are suppressed in the output.  
+- The script uses here::here() for robust file path handling.
+
+Feel free to reach out if you encounter issues reproducing the analysis.
